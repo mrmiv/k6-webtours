@@ -56,15 +56,15 @@ export default function () {
     "password": "test123",
     'userSession': '',
     
-    'lastName': '',
-    'firsName': '',
+    'lastName': 'M',
+    'firsName': 'Ilya',
 
-    'address1': '', // city
-    'address2': '', // adress
+    'address1': 'test street', // address
+    'address2': 'Tomsk', // city
 
-    'pass1': '',
-    'creditCard': '',
-    'expDate': ''
+    'pass1': 'Ilya M',
+    'creditCard': '123123123123',
+    'expDate': '1234'
   }
 
    group("home", () => {
@@ -92,12 +92,12 @@ export default function () {
     flightParams['arriveCity'] = arriveCity
     flightParams['seatPref'] = seatPref
     flightParams['seatType'] = seatType
-    flightParams['departDate'] = new Date().toISOString()
-    flightParams['returnDate'] = new Date().toISOString()
+    flightParams['departDate'] = new Date().toLocaleString('en-US', { timeZone: 'UTC' })
+    flightParams['returnDate'] = new Date().toLocaleString('en-US', { timeZone: 'UTC' })
 
     flightParams['outboundFlight'] = setFlightOptions(flightParams)
-    selectFlight()
-    setPaymentDetails({...flightParams, ...user}) // combine object flightParams with object user
+    selectFlight(flightParams)
+    setPaymentDetails(Object.assign({}, flightParams, user)) // combine object flightParams with object user
 
   })
 
@@ -250,8 +250,8 @@ export function setFlightOptions({advanceDiscount, departCity, departDate, arriv
     'seatType': seatType,
     'roundtrip': roundtrip,
 
-    'findFlights.y': '9',
-    'findFlights.x': '54',
+    'findFlights.y': '12',
+    'findFlights.x': '61',
     '.cgifields': ['roundtrip', 'seatType', 'seatPref']
   }
 
@@ -268,7 +268,7 @@ export function setFlightOptions({advanceDiscount, departCity, departDate, arriv
     'outbound flight exist': res => res.html().find('input[name=outboundFlight]').first().val() !== undefined
   })
 
-  const outboundFlight = randomItem(res.html().find('input[name=seatType]').map((idx, el) => el.val()))
+  const outboundFlight = randomItem(res.html().find('input[name=outboundFlight]').map((idx, el) => el.val()))
 
   return outboundFlight
 
@@ -288,6 +288,8 @@ export function selectFlight({outboundFlight, advanceDiscount, numPassengers, se
     'reserveFlights.y': '10'
   }
 
+  console.warn(payload);
+
   const headers = {
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
@@ -305,6 +307,8 @@ export function selectFlight({outboundFlight, advanceDiscount, numPassengers, se
 
 export function setPaymentDetails({outboundFlight, advanceDiscount, numPassengers, seatPref, seatType, firsName, lastName, address1, address2, pass1, creditCard, expDate}){
 
+  console.warn({outboundFlight, advanceDiscount, numPassengers, seatPref, seatType, firsName, lastName, address1, address2, pass1, creditCard, expDate})
+
   const payload = {
 
     'outboundFlight': outboundFlight,
@@ -320,8 +324,8 @@ export function setPaymentDetails({outboundFlight, advanceDiscount, numPassenger
     'creditCard': creditCard,
     'expDate': expDate,
 
-    'buyFlights.x': '40',
-    'buyFlights.y': '10',
+    'buyFlights.x': '53',
+    'buyFlights.y': '9',
     '.cgifields': ['saveCC']
   }
 

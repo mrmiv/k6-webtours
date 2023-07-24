@@ -26,7 +26,7 @@ export const options = {
 //     http_req_failed: ['rate<1'],
 //     http_req_duration: ['p(95)<300'],
 //   },
-};
+}
 
 // LOAD SCENARIO
 export default function () {
@@ -95,7 +95,9 @@ export default function () {
     flightParams['departDate'] = new Date().toISOString()
     flightParams['returnDate'] = new Date().toISOString()
 
-
+    flightParams['outboundFlight'] = setFlightOptions(flightParams)
+    selectFlight()
+    setPaymentDetails({...flightParams, ...user}) // combine object flightParams with object user
 
   })
 
@@ -234,9 +236,20 @@ export function getReservationsList(){
 
 }
 
-export function setFlightOptions(){
+export function setFlightOptions({advanceDiscount, departCity, departDate, arriveCity, returnDate, numPassengers, seatPref, seatType, roundtrip}){
 
   const payload = {
+
+    'advanceDiscount': advanceDiscount,
+    'depart': departCity,
+    'departDate': departDate,
+    'arrive': arriveCity,
+    'returnDate': returnDate,
+    'numPassengers': numPassengers,
+    'seatPref': seatPref,
+    'seatType': seatType,
+    'roundtrip': roundtrip,
+
     'findFlights.y': '9',
     'findFlights.x': '54',
     '.cgifields': ['roundtrip', 'seatType', 'seatPref']
@@ -251,7 +264,78 @@ export function setFlightOptions(){
 
   const res = http.post(`${BASE_URL}/reservations.pl`, payload, headers)
   check(res, {
-    'set flight options status is 200': res => res.status === 200
+    'set flight options status is 200': res => res.status === 200,
+    'outbound flight exist': res => res.html().find('input[name=outboundFlight]').first().val() !== undefined
+  })
+
+  const outboundFlight = randomItem(res.html().find('input[name=seatType]').map((idx, el) => el.val()))
+
+  return outboundFlight
+
+}
+
+export function selectFlight({outboundFlight, advanceDiscount, numPassengers, seatPref, seatType}){
+
+  const payload = {
+
+    'outboundFlight': outboundFlight,
+    'advanceDiscount': advanceDiscount,
+    'numPassengers': numPassengers,
+    'seatPref': seatPref,
+    'seatType': seatType,
+
+    'reserveFlights.x': '8',
+    'reserveFlights.y': '10'
+  }
+
+  const headers = {
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Upgrade-Insecure-Requests': '1'
+    }
+  }
+
+  const res = http.post(`${BASE_URL}/reservations.pl`, payload, headers)
+  check(res, {
+    'select flight status is 200': res => res.status === 200,
+    'page Payment Details is open': res => res.html().find('Payment Details').text() !== undefined
+  })
+
+}
+
+export function setPaymentDetails({outboundFlight, advanceDiscount, numPassengers, seatPref, seatType, firsName, lastName, address1, address2, pass1, creditCard, expDate}){
+
+  const payload = {
+
+    'outboundFlight': outboundFlight,
+    'advanceDiscount': advanceDiscount,
+    'numPassengers': numPassengers,
+    'seatPref': seatPref,
+    'seatType': seatType,
+    'firstName': firsName,
+    'lastName': lastName,
+    'address1': address1,
+    'address2': address2,
+    'pass1': pass1,
+    'creditCard': creditCard,
+    'expDate': expDate,
+
+    'buyFlights.x': '40',
+    'buyFlights.y': '10',
+    '.cgifields': ['saveCC']
+  }
+
+  const headers = {
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Upgrade-Insecure-Requests': '1'
+    }
+  }
+
+  const res = http.post(`${BASE_URL}/reservations.pl`, payload, headers)
+  check(res, {
+    'set payment options status is 200': res => res.status === 200,
+    'page Invoice is open': res => res.html().find('Invoice').text() !== undefined
   })
 
 }

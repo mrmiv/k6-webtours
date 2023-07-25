@@ -16,8 +16,10 @@ export const options = {
     discardResponseBodies: true, // if you check only http-code
   scenarios: {
     wwwru: {
-      executor: 'ramping-vus',
+      executor: 'ramping-arrival-rate',
       exec: 'openWWWRu',
+      preAllocatedVUs: 5,
+      timeUnit: '1m',
       stages: [
         {duration: '5m', target: config.wwwru.maxRpm},
         {duration: '10m', target: config.wwwru.maxRpm},
@@ -26,8 +28,10 @@ export const options = {
       ]
     },
     yaru: {
-      executor: 'ramping-vus',
+      executor: 'ramping-arrival-rate',
       exec: 'openYaRu',
+      preAllocatedVUs: 5,
+      timeUnit: '1m',
       stages: [
         {duration: '5m', target: config.yaru.maxRpm},
         {duration: '10m', target: config.yaru.maxRpm},
